@@ -6,8 +6,8 @@
 #SBATCH --cpus-per-task=1        # cpu-cores per task (>1 if multi-threaded tasks)
 #SBATCH --mem=1G         
 #SBATCH --time=00:01:00          # total run time limit (HH:MM:SS)
-#SBATCH -o outfile  # send stdout to outfile
-#SBATCH -e errfile  # send stderr to errfile
+#SBATCH -o outfile.out  		 # send stdout to outfile
+#SBATCH -e errfile.err  		 # send stderr to errfile
 #SBATCH --mail-type=begin        # send email when job begins
 #SBATCH --mail-type=end          # send email when job ends
 #SBATCH --mail-user=benjamin.heuclin@cirad.fr
