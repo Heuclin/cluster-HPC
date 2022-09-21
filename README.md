@@ -13,7 +13,22 @@ Tuto : Cluster Muse
 
 *Septembre 2022*
 
+Licence : <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Licence Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />Ce(tte) œuvre est mise à disposition selon les termes de la <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Licence Creative Commons Attribution - Pas d’Utilisation Commerciale 4.0 International</a>.
+
 ___
+
+
+1. [Connexion au Cluster](#connexion)
+2. [Transfer de fichier](#transfer)
+3. [Another paragraph](#paragraph2)
+4. [Les espaces de stockage](#stockage)
+5. [Procedure de soumission de jobs R](#soumission)
+6. [Les commandes utiles](#commandes)
+7. [Exemples](#exemples)
+    1. [Exemple python](#ex_python)
+
+
+
 
 Pour les agents Cirad, il faut demander l'accès à Bertrand Pitollat  ([bertrand.pitollat@cirad.fr](mailto:bertrand.pitollat@cirad.fr)).
 
@@ -26,7 +41,12 @@ Documentation Muse : https://meso-lr.umontpellier.fr/documentation-utilisateurs/
 
 
 
-# Connexion au Cluster
+
+
+
+<a name="connexion"></a>
+
+# Connexion au Cluster 
 
 
 C'est très simple ! La connexion au cluster de calcul haute performance se fait via le protocole SSH. Le nom d’hôte de la machine de connexion est `muse-login.meso.umontpellier.fr`.
@@ -86,7 +106,16 @@ Vous voilà maintenant connecter au cluster Muse. Le cluster Muse utilise le ges
 
 
 
+
+
+
+
+
+
+<a name="transfer"></a>
+
 # Transfer de fichier
+
 Pour soumettre vos job, il va falloir envoyer vos scripts sur le cluster. Il vous faudra ensuite récupérer les fichiers générés par vos job. Pour ce faire, on va utiliser le logiciel FileZilla. Il est disponible sous Windows, OSX et Linux.
 
 Installer FileZilla : https://filezilla-project.org/download.php?show_all=1
@@ -117,6 +146,7 @@ Vous pouvez transférer un fichier dans un sens ou dans l'autre en cliquant droi
 
 
 
+<a name="stockage"></a>
 
 # Les espaces de stockage
 
@@ -194,6 +224,7 @@ ___
 
 
 
+<a name="soumission"></a>
 
 # Procedure de soumission de jobs R
 
@@ -299,6 +330,20 @@ Enfin quiter R avec la commande `q()`.
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+<a name="commandes"></a>
+
 # Les commandes utiles
 
 
@@ -347,7 +392,18 @@ Plus d'info sur les commandes ici : https://slurm.schedmd.com/man_index.html
 
 
 
+
+
+
+
+
+
+
+<a name="exemples"></a>
+
 # Exemples
+
+<a name="ex_python"></a>
 
 ## Exemple python
 
