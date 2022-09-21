@@ -2,18 +2,16 @@
 
 
 
----
-title: |
-  ![](Figures/logos.png)
-  Cluster Muse
-author: "Benjamin Heuclin, Ingénieur statisticien, UR AIDA, Cirad"
-date: "19/08/2022"
+![](Figures/logos.png)
 
-output:
-  html_document:
-    number_sections: yes
-    toc: yes
----
+Tuto : Cluster Muse
+===================
+
+***Axe transversal TIM AIDA***
+
+*Benjamin Heuclin, Ingénieur statisticien, UR AIDA, Cirad*
+
+*Septembre 2022*
 
 ___
 
