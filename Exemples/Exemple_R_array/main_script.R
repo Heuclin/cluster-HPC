@@ -1,22 +1,36 @@
+####################################################################
+# Benjamin Heuclin, UR AIDA, PERSYST, CIRAD              
+# février 2023
+# 
+# R script example for array job 
+# (run one code several times on different parameters)
+###################################################################
 
-# on récupère l'indice (i) de la tâche ($SLURM_ARRAY_TASK_ID dans job_submission.sh)
-i = as.numeric(commandArgs(trailingOnly=TRUE)[1])
-print(paste0('Hello! Je suis la tache : ', i))
 
-# Définition d'une grille de paramètres que je veux faire varier
-pars <-  expand.grid(n = 1:2, p = 1:3, k = 1:2)
 
-# Définition de ma fonction
+# get task index (id) ($SLURM_ARRAY_TASK_ID in job_submission.sh)
+id = as.numeric(commandArgs(trailingOnly=TRUE)[1])
+print(paste0('Hello! I am the task: ', id))
+
+
+# my function definition
 my_fct <- function(n, p, k) return(n*p*k)
 
-# on affiche les paramètres pour ce job
+# Define a grid of parameters
+pars <-  expand.grid(n = 1:2, p = 1:3, k = 1:2)
+
+
+# print parameters for this task
 print(paste0('Les parametres pour cette tache: n=', pars$n[i], ', p=', pars$p[i], ', k=', pars$k[i]))
 
-# Execution de la fonction sur la ligne i de la grille de paramètres
-result <- my_fct(n=pars$n[i], p=pars$p[i], k=pars$k[i])
-print(paste0("Le resultat de ma fonction est : ", result))
+# my calculus
+result <- my_fct(n=pars$n[id], p=pars$p[id], k=pars$k[id])
+print(paste0("The result is : ", result))
 
-# une petite pause de 30s et c'est fini
+# Save the results in ".Rdata" object
+save(result, file = paste0("results/my_result_n=", pars$n[id], "p=", pars$p[id], "k=", pars$k[id], ".Rdata") )
+
+# a break 
 Sys.sleep(30)
 
 

@@ -1,15 +1,11 @@
 ---
 output:
-  word_document: default
+  pdf_document: default
   html_document: default
 ---
-
-
-
-
 ![](Figures/logos.png)
 
-# Tuto : Cluster Muse avec Rstudio
+# Tuto : Cluster Muse with Rstudio
 
 
 ***Axe transversal TIM, UR AIDA***
@@ -25,10 +21,10 @@ Licence : <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"
 
 ___
 
-1. [C'est quoi un supercalculateur ? et la parallélisation ?](#cluster_parallelisation)
-    1. [La paralélisation](#parallelisation)
+1. [What is a supercomputer? And parallelization?](#cluster_parallelisation)
+    1. [Parallelization](#parallelisation)
     2. [Cluster de calcul MUSE (MESO@LR)](#cluster)
-2. [Connexion au Cluster](#connexion)
+2. [Cluster Connection](#connexion)
 3. [Transfer de fichier](#transfer) 
 4. [Les espaces de stockage](#stockage)
 5. [Procedure de soumission de jobs R](#proc_soumission)
@@ -51,63 +47,47 @@ ___
 ___
 
 
+> This document is limited to the use of R on CPU, with shared memory parallelization (openMP). It is an initiation to quickly take control of the job submission process.
 
+To use the cluster, you need a unix terminal to connect, submit and manage your jobs and a file transfer software to send your codes, ... from your PC to the cluster and vice versa.
 
-
-
-
-
-
-
-> 🚨 Ce document se limite à l'utilisation de R sur CPU, avec une parallélisation en mémoire partagée (openMP). C'est une initiation pour prendre rapidement en main le processus de soumission de jobs.
-
-Pour les agents Cirad, il faut demander l'accès à Bertrand Pitollat ([bertrand.pitollat@cirad.fr](mailto:bertrand.pitollat@cirad.fr)) en lui envoyant un email en précisant l'unité, votre numéro de poste téléphonique CIRAD accompagné de la charte signée.  
-
-
-Vous obtenez  ainsi un nom d'utilisateur (généralement celui de votre compte Cirad) et un mot de passe (généralement le même que celui de votre compte Cirad).
-
-Pour utiliser le cluster, il faut un terminal unix pour ce connect, soumettre et gérer vos jobs et un logiciel de transfert de fichier pour envoyer vos codes, ... de votre PC vers le cluster et vice-versa.
-
-
-Documentation Muse : https://meso-lr.umontpellier.fr/documentation-utilisateurs/
-
+Cluster documentations : https://meso-lr.umontpellier.fr/documentation-utilisateurs/
 
 
 [######################################################################################]: # 
 
 <br><br>
 
-# 1. C'est quoi un supercalculateur ? et la parallélisation ? {#cluster_parallelisation}
+# 1. What is a supercomputer? And parallelization? {#cluster_parallelisation}
 
 ---
 
+[Wikipédia definition](https://fr.wikipedia.org/wiki/Superordinateur) : <br>
+A supercomputer is a computer designed to achieve the highest possible performance with the techniques known at the time of its design, particularly in terms of computing speed. For performance reasons, it is almost always a mainframe computer, whose tasks are performed in batch mode. <br>
+The science of supercomputing is called "high performance computing" (HPC). 
 
-[Définition wikipédia](https://fr.wikipedia.org/wiki/Superordinateur) : <br>
-Un superordinateur ou supercalculateur est un ordinateur conçu pour atteindre les plus hautes performances possibles avec les techniques connues lors de sa conception, en particulier en ce qui concerne la vitesse de calcul. Pour des raisons de performance, c'est presque toujours un ordinateur central, dont les tâches sont fournies en traitement par lots. <br>
-La science des superordinateurs est appelée « calcul haute performance » (en anglais : high-performance computing ou HPC). 
-
-Un supercalculateur est généralement un regroupement plusieurs ordinateurs indépendants appelés nœuds (node en anglais) d'où l'appélation également sous le terme de cluster de calcul.
-
+A supercomputer is generally a grouping of several independent computers called nodes, hence the term "cluster".
 
 
-## 1.1 La parallélisation {#parallelisation}
+## 1.1 Parallelization {#parallelisation}
 
-Ce lien explique très bien les différents types de parallélisation :
+This link explains very well the different types of parallelization:
 
 https://cwant.github.io/hpc-beyond/21-introduction-to-parallelism/index.html
 
-> Une tâche (ou processus, ou thread) est une unité de traitement logique
+> A task (or processus, or thread) is a logical processing unit
 
 
-* **Stratégie de mémoire partagée :** il s'agit de la situation où votre programme exécute des tâches sur pluisieurs CPUs (1 par tâche) sur le même nœud, et chaque CPU peut accéder à toute la mémoire utilisée par le programme. Une bibliothèque très largement utilisée pour réaliser ce type de parallélisme est OpenMP (Open Multi-Processing).<br>
-Ce type de parallélisation peut se produire pendant l'exécution d'une boucle "for" spécifique en répartissant la boucle entre les différents CPUs. <br>
-**Ce type de paralélisation est réalisable sur ton PC.**
+* **Shared memory strategy:** this is the situation where your program runs tasks on several CPUs (1 per task) on the same node, and each CPU can access all the memory used by the program. A widely used library for achieving this type of parallelism is OpenMP (Open Multi-Processing). <br>
+This type of parallelization can occur during the execution of a specific "for" loop by distributing the loop among the different CPUs. <br>
+**This type of parallelization is possible on your PC.**
 
-* **Stratégie de mémoire distribuée :** chaque tâche est exécuté sur un CPU (sur un noeud) qui possède sa propre mémoire qui lui est privée, et aucune autre CPU ne peut voir cette mémoire (indépendance). Afin de communiquer ce qui se trouve dans l'espace mémoire d'un CPU à un autre, les CPUs se "passent des messages". Grâce à cette conception, le code est modularisé de telle sorte que certaines parties du programme peuvent être exécutées sur plusieurs machines différentes (nœuds), chaque machine devant travailler avec son propre espace mémoire.
-Une bibliothèque populaire pour implémenter ce type de parallélisme est appelée MPI (Message Passing Interface). <br>
+* **Distributed memory strategy:** each task is executed on a CPU (on a node) that has its own private memory, and no other CPU can see this memory (independence). In order to communicate what is in the memory space from one CPU to another, the CPUs "pass messages" to each other. With this design, the code is modularized so that parts of the program can be run on several different machines (nodes), each machine having to work with its own memory space.
+A popular library for implementing this type of parallelism is called MPI (Message Passing Interface). 
 
 
-* **Stratégie hybride :** la mémoire est distribuée entre les nœuds, mais sur chaque nœud le code peut utiliser une stratégie de mémoire partagée. Cela pourrait être un cas où vous voulez utiliser MPI pour faire passer des messages entre chaque nœud, mais sur chaque nœud vous utilisez une stratégie de mémoire partagée utilisant OpenMP. <br>
+
+* **Hybrid strategy:** memory is distributed between nodes, but on each node the code can use a shared memory policy. This could be a case where you want to use MPI to pass messages between each node, but on each node you use a shared memory strategy using OpenMP. 
 
 
 
@@ -117,67 +97,64 @@ Une bibliothèque populaire pour implémenter ce type de parallélisme est appel
 
 |          | 1 node       | n nodes |
 | :------- | :----------- | :------ |
-| 1 CPU    | Job en série | MPI     |
-| n CPUs   | OpenMP       | hybride : OpenMPI |
+| 1 CPU    | serial job   | MPI     |
+| n CPUs   | OpenMP       | hybrid : OpenMPI |
 
 
 
 
 <br>
 
-## 1.2 Le cluster de calcul MUSE (MESO@LR) {#cluster}
+## 1.2 The MUSE cluster (MESO@LR) {#cluster}
 
-**Les chiffres :**
+**Numbers :**
 
-* 308 nœuds (nodes) de calcul Dell PowerEdge C6320
+* 308 nodes Dell PowerEdge C6320
     - bi processeurs Intel Xeon E5-2680 v4 2,4 Ghz (broadwell)
-    - **28 CPUs par nœuds**, total : 8624 CPUs 
-    - 128 Go RAM par nœuds
+    - **28 CPUs per node**, total: 8624 CPUs 
+    - 128 Go RAM per node
     - 330 Tflops 
-* 2 noeuds large mémoire 112 coeurs, 3To RAM
-* 2 noeuds GPU de visualisation, 52 coeurs CPU (bi-processeurs 26 coeurs), dédiés et configurées pour le post-traitement (Poweredge R740 embarquant du RTX6000)
-* 1,3 Po de stockage dédié au calcul
-    * 1 Po de stockage rapide sous Lustre
-    * 350 To de stockage pérenne
-* Réseau d’interconnexion Intel OmniPath 100 Gb/s
-* Pas d’accélérateur
-* Gestionnaire de soumission de job : [SLURM (Simple Linux Utility for Resource Management)](https://slurm.schedmd.com/documentation.html)
-    * Ordonnancement de tâches dans les files d’attentes (arbitrage)
+* 2 large memory nodes 112 CPUs, 3To RAM
+* 2 GPU node for visualization, 52 CPU (bi-processeurs 26 CPU)
+* 1,3 Po of storage dedicated to computing
+    * 1 Po for quick storage under Lustre
+    * 350 To of perennial storage
+* Interconnection network Intel OmniPath 100 Gb/s
+* No accelerator
+* Job submission manager: [SLURM (Simple Linux Utility for Resource Management)](https://slurm.schedmd.com/documentation.html)
+    * Scheduling of tasks in queues (arbitration)
 
 
 <br>
 **Fonctionnement :**
 
-  * Les utilisateurs appartenant à des groupes exécutent des jobs sur des partitions
-  * Une partition est un ensemble de nœuds
+  * Users belonging to groups run jobs on partitions
+  * A partition is a set of nodes
 
 
 <br>
-**Partitions pour les Ciradiens :**
+**Partitions for CIRAD staff :**
 
-Il faut choisir la partition sur laquelle lancer vos jobs. Il existe plusieurs partions pour les ciradiens :
+You have to choose the partition on which to launch your jobs. There are several partions for the CIRAD:
 
-
-| Partition   | Description            | Limite de <br> temps | nb nodes  | nb CPUs <br> par noeud |Mémoire par défaut * | Mémoire max |
+| Partition   | Description            | Tme Limite | nb nodes  | nb CPUs <br> per node |default memory * | max memory |
 | :---------  | :------------          | :---------:     |:--------: |:------: | :------: | :------: |
-| agap_short  | Pour des jobs rapides  | 1 h             | 71        | 28      | 4 Go     | 128 Go   |
-| agap_normal | Partition par défaut   | 2 j             | 67        | 28      | 4 Go     | 128 Go   |
-| agap_long   | Pour jobs chronophages | Pas de limite   | 67        | 28      | 4 Go     | 128 Go   |
-| agap_bigmem | calculs grosse mémoire | Pas de limite   | 1         | 112     | 28 Go    | 3 To     |
+| agap_short  | For fast jobs          | 1 h             | 71        | 28      | 4 Go     | 128 Go   |
+| agap_normal | Default partition      | 2 j             | 67        | 28      | 4 Go     | 128 Go   |
+| agap_long   | For long jobs          | Pas de limite   | 67        | 28      | 4 Go     | 128 Go   |
+| agap_bigmem | large memory calculations | Pas de limite   | 1         | 112     | 28 Go    | 3 To     |
 
 
 
 
-$*$ La mémoire vive par noeud est limitée par défaut (voir colonne 6) mais elle peut être augmentée en ajoutant la ligne :
+$*$ The RAM per node is limited by default (see column 6) but it can be increased by adding the line :
 
-* `--mem=XG` (pour la mémoire alouée pour le job en entié)
-* ou `--mem-per-cpu=XG`  (pour la mémoire alouée pour chaque CPU)
-
-dans votre script batch (voir section [Soumission de job](#proc_soumission)) avec "X" la quantité de mémoire. Voir colonne 7 pour la quantité de mémoire max par noeud. 
-Ces 2 paramètres sont exclusifs l'un l'autre. 
+* `--mem=XG` (for the memory allocated for the whole job)
+* ou `--mem-per-cpu=XG`  (for the memory allocated for each CPU)
 
 
-
+In your batch script (see section [Job submission](#proc_soumission)) with "X" the amount of memory. See column 7 for the max memory quantity per node. 
+These 2 parameters are exclusive of each other. 
 
 
 
@@ -199,7 +176,7 @@ Ces 2 paramètres sont exclusifs l'un l'autre.
 [######################################################################################]: # 
 <br><br>
 
-# 2. Connexion au Cluster {#connexion}
+# 2. Cluster Connection {#connexion}
 
 ---
 
@@ -998,6 +975,38 @@ A enregister au au format .sh ou à télécharger avec le lien ci-dessous.
 [Ce script](https://hpc-lr.umontpellier.fr/wp-content/uploads/2017/05/rsync.txt) vous permet de copier des données depuis le cluster Muse vers votre machine.
 Il vous faut modifier les champs USER, DOSSIER_CLUSTER et DOSSIER_PERSO et ensuite le lancer avec la commande « bash rsync ».
 Il est vivement conseillé d’utiliser ce script lors de téléchargement de fichiers volumineux.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
