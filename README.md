@@ -9,7 +9,7 @@ output:
 
 ![](Figures/logos.png)
 
-# Tuto : Cluster Muse avec Rstudio
+# Introduction au cluster de calcul MESO@LR 
 
 
 ***Axe transversal TIM, UR AIDA***

@@ -13,7 +13,7 @@
 #SBATCH --ntasks-per-node=1     # NB tâches par noeud (MPI processes, openMP -> 1)
 #SBATCH --cpus-per-task=10      # NB CPUs par task
 #SBATCH --mem-per-cpu=100M      # Mémoire par CPU
-#SBATCH --time=00:10:00         # Temps limite
+#SBATCH --time=0-00:10:00       # Temps limite
 
 
 module purge
@@ -27,9 +27,9 @@ cd $SLURM_SUBMIT_DIR
 
 mkdir ./Rout 
 mkdir ./results 
-R CMD BATCH ./script_RF.R    ./Rout/script_RF.Rout
+R CMD BATCH ./main_script.R    ./Rout/main_script.Rout
 
-# Rscript ./script_RF.R 
+# Rscript ./main_script.R 
 
 # Pour obtenir des informations sur le job dans le fichier de sortie .out
 seff $SLURM_JOB_ID

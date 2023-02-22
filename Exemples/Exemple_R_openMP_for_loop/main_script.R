@@ -1,6 +1,6 @@
 ####################################################################
 # Benjamin Heuclin, UR AIDA, PERSYST, CIRAD              
-# février 2023
+# February 2023
 # 
 # R script example for job in openMP with for loop
 # (run one code several times on different parameters)
@@ -23,6 +23,7 @@ doParallel::registerDoParallel(cores = nb_CPUs)
 
 
 
+
 # My code -----------------------------------------------------------------
 
 # my function definition
@@ -33,10 +34,8 @@ pars <-  expand.grid(n = seq(1,2, 0.5), p = 1:3, k = 1:10)
 
 
 
-
 # Parallel for loop (See ?foreach::foreach for more help)
-RESULTS = foreach::foreach(i = 1:nrow(pars), .verbose = FALSE, .combine="c") %dopar% {
-
+RESULTS = foreach::foreach(i = 1:nrow(pars), .verbose = FALSE, .combine="c")%dopar%{
   # my calculus
   result <- my_fct(n=pars$n[i], p=pars$p[i], k=pars$k[i])
   print(paste0("The result is : ", result))
