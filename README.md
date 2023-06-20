@@ -1,113 +1,97 @@
----
-output:
-  word_document: default
-  html_document: default
----
-
-
 
 
 ![](Figures/logos.png)
 
-# Introduction au cluster de calcul MESO@LR 
+# Introduction to HPC cluster MESO-LR
+
 
 
 ***Axe transversal TIM, UR AIDA***
 
-*Benjamin Heuclin, Ingénieur statisticien, UR AIDA, Cirad*
+*Benjamin Heuclin, Statistician engineer, UR AIDA, Cirad*
 
 *Septembre 2022*
 
-Licence : <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Licence Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />Ce(tte) œuvre est mise à disposition selon les termes de la <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Licence Creative Commons Attribution - Pas d’Utilisation Commerciale 4.0 International</a>.
 
+
+<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.
 
 
 
 ___
 
-1. [C'est quoi un supercalculateur ? et la parallélisation ?](#cluster_parallelisation)
-    1. [La paralélisation](#parallelisation)
-    2. [Cluster de calcul MUSE (MESO@LR)](#cluster)
-2. [Connexion au Cluster](#connexion)
-3. [Transfer de fichier](#transfer) 
-4. [Les espaces de stockage](#stockage)
-5. [Procedure de soumission de jobs R](#proc_soumission)
-6. [Les commandes SLURM utiles](#commandes)
-7. [Rstudio sur le cluster](#rstudio) 
-8. [Ressources](#ressources)
+1. [What is a supercomputer? And parallelization?](#cluster_parallelisation)
+    1. [Parallelization](#parallelization)
+    2. [The MESO@LR cluster at the University of Montpellier](#cluster)
+2. [Cluster connection](#connection)
+3. [File transfer](#transfer) 
+4. [The storage spaces](#storage)
+5. [Job submission process under SLURM](#proc_soumission)
+6. [Useful SLURM commands](#commands)
+7. [Rstudio on the cluster](#rstudio) 
+8. [Resources](#resources)
 *  [Annexes](#annexes)
 
-    A.[ Les exemples](#annexes_exemples)
-      1. [Exemple R OpenMP sur calibration d'une RF](#ex_R_openMP)
-      2. [Exemple R openMP for loop](#ex_R_forloop)
-      3. [Exemple R array](#ex_R_array)
+    A.[Examples](#annexes_examples)
+      1. [R OpenMP example parallel for loop](#ex_R_forloop)
+      2. [R OpenMP example for random forest calibration](#ex_R_openMP)
+      3. [R array example](#ex_R_array)
       
     B. [Script batch corrompu à cause des retours à la ligne WINDOWS](#annexes_unix_LF)
     
-    C. [rsync](#annexes_rsunc)
+    C. [rsync](#annexes_rsync)
     
     
     
 ___
 
 
+> This document is limited to the use of R on CPU, with shared memory parallelization (openMP). It is an initiation to quickly take control of the job submission process.
 
+To use the cluster, you need a unix terminal to connect, submit and manage your jobs and a file transfer software to send your codes, ... from your PC to the cluster and vice versa.
 
-
-
-
-
-
-
-> 🚨 Ce document se limite à l'utilisation de R sur CPU, avec une parallélisation en mémoire partagée (openMP). C'est une initiation pour prendre rapidement en main le processus de soumission de jobs.
-
-Pour les agents Cirad, il faut demander l'accès à Bertrand Pitollat ([bertrand.pitollat@cirad.fr](mailto:bertrand.pitollat@cirad.fr)) en lui envoyant un email en précisant l'unité, votre numéro de poste téléphonique CIRAD accompagné de la charte signée.  
-
-
-Vous obtenez  ainsi un nom d'utilisateur (généralement celui de votre compte Cirad) et un mot de passe (généralement le même que celui de votre compte Cirad).
-
-Pour utiliser le cluster, il faut un terminal unix pour ce connect, soumettre et gérer vos jobs et un logiciel de transfert de fichier pour envoyer vos codes, ... de votre PC vers le cluster et vice-versa.
-
-
-Documentation Muse : https://meso-lr.umontpellier.fr/documentation-utilisateurs/
-
+Cluster documentations : https://meso-lr.umontpellier.fr/documentation-utilisateurs/
 
 
 [######################################################################################]: # 
 
 <br><br>
 
-# 1. C'est quoi un supercalculateur ? et la parallélisation ? {#cluster_parallelisation}
+<a name="cluster_parallelisation"></a>
+
+# 1. What is a supercomputer? And parallelization? 
 
 ---
 
+[Wikipédia definition](https://fr.wikipedia.org/wiki/Superordinateur) : <br>
+A supercomputer is a computer designed to achieve the highest possible performance with the techniques known at the time of its design, particularly in terms of computing speed. For performance reasons, it is almost always a mainframe computer, whose tasks are performed in batch mode. <br>
+The science of supercomputing is called "high performance computing" (HPC). 
 
-[Définition wikipédia](https://fr.wikipedia.org/wiki/Superordinateur) : <br>
-Un superordinateur ou supercalculateur est un ordinateur conçu pour atteindre les plus hautes performances possibles avec les techniques connues lors de sa conception, en particulier en ce qui concerne la vitesse de calcul. Pour des raisons de performance, c'est presque toujours un ordinateur central, dont les tâches sont fournies en traitement par lots. <br>
-La science des superordinateurs est appelée « calcul haute performance » (en anglais : high-performance computing ou HPC). 
-
-Un supercalculateur est généralement un regroupement plusieurs ordinateurs indépendants appelés nœuds (node en anglais) d'où l'appélation également sous le terme de cluster de calcul.
-
+A supercomputer is generally a grouping of several independent computers called nodes, hence the term "cluster".
 
 
-## 1.1 La parallélisation {#parallelisation}
 
-Ce lien explique très bien les différents types de parallélisation :
+<a name="parallelization"></a>
+
+## 1.1 Parallelization 
+
+This link explains very well the different types of parallelization:
 
 https://cwant.github.io/hpc-beyond/21-introduction-to-parallelism/index.html
 
-> Une tâche (ou processus, ou thread) est une unité de traitement logique
+> A task (or processus, or thread) is a logical processing unit
 
 
-* **Stratégie de mémoire partagée :** il s'agit de la situation où votre programme exécute des tâches sur pluisieurs CPUs (1 par tâche) sur le même nœud, et chaque CPU peut accéder à toute la mémoire utilisée par le programme. Une bibliothèque très largement utilisée pour réaliser ce type de parallélisme est OpenMP (Open Multi-Processing).<br>
-Ce type de parallélisation peut se produire pendant l'exécution d'une boucle "for" spécifique en répartissant la boucle entre les différents CPUs. <br>
-**Ce type de paralélisation est réalisable sur ton PC.**
+* **Shared memory strategy:** this is the situation where your program runs tasks on several CPUs (1 per task) on the same node, and each CPU can access all the memory used by the program. A widely used library for achieving this type of parallelism is OpenMP (Open Multi-Processing). <br>
+This type of parallelization can occur during the execution of a specific "for" loop by distributing the loop among the different CPUs. <br>
+**This type of parallelization is possible on your PC.**
 
-* **Stratégie de mémoire distribuée :** chaque tâche est exécuté sur un CPU (sur un noeud) qui possède sa propre mémoire qui lui est privée, et aucune autre CPU ne peut voir cette mémoire (indépendance). Afin de communiquer ce qui se trouve dans l'espace mémoire d'un CPU à un autre, les CPUs se "passent des messages". Grâce à cette conception, le code est modularisé de telle sorte que certaines parties du programme peuvent être exécutées sur plusieurs machines différentes (nœuds), chaque machine devant travailler avec son propre espace mémoire.
-Une bibliothèque populaire pour implémenter ce type de parallélisme est appelée MPI (Message Passing Interface). <br>
+* **Distributed memory strategy:** each task is executed on a CPU (on a node) that has its own private memory, and no other CPU can see this memory (independence). In order to communicate what is in the memory space from one CPU to another, the CPUs "pass messages" to each other. With this design, the code is modularized so that parts of the program can be run on several different machines (nodes), each machine having to work with its own memory space.
+A popular library for implementing this type of parallelism is called MPI (Message Passing Interface). 
 
 
-* **Stratégie hybride :** la mémoire est distribuée entre les nœuds, mais sur chaque nœud le code peut utiliser une stratégie de mémoire partagée. Cela pourrait être un cas où vous voulez utiliser MPI pour faire passer des messages entre chaque nœud, mais sur chaque nœud vous utilisez une stratégie de mémoire partagée utilisant OpenMP. <br>
+
+* **Hybrid strategy:** memory is distributed between nodes, but on each node the code can use a shared memory policy. This could be a case where you want to use MPI to pass messages between each node, but on each node you use a shared memory strategy using OpenMP. 
 
 
 
@@ -117,67 +101,66 @@ Une bibliothèque populaire pour implémenter ce type de parallélisme est appel
 
 |          | 1 node       | n nodes |
 | :------- | :----------- | :------ |
-| 1 CPU    | Job en série | MPI     |
-| n CPUs   | OpenMP       | hybride : OpenMPI |
+| 1 CPU    | serial job   | MPI     |
+| n CPUs   | OpenMP       | hybrid : OpenMPI |
 
 
 
 
 <br>
 
-## 1.2 Le cluster de calcul MUSE (MESO@LR) {#cluster}
+<a name="cluster"></a>
 
-**Les chiffres :**
+## 1.2 The MESO@LR cluster at the University of Montpellier
 
-* 308 nœuds (nodes) de calcul Dell PowerEdge C6320
+**Numbers :**
+
+* 308 nodes Dell PowerEdge C6320
     - bi processeurs Intel Xeon E5-2680 v4 2,4 Ghz (broadwell)
-    - **28 CPUs par nœuds**, total : 8624 CPUs 
-    - 128 Go RAM par nœuds
+    - **28 CPUs per node**, total: 8624 CPUs 
+    - 128 Go RAM per node
     - 330 Tflops 
-* 2 noeuds large mémoire 112 coeurs, 3To RAM
-* 2 noeuds GPU de visualisation, 52 coeurs CPU (bi-processeurs 26 coeurs), dédiés et configurées pour le post-traitement (Poweredge R740 embarquant du RTX6000)
-* 1,3 Po de stockage dédié au calcul
-    * 1 Po de stockage rapide sous Lustre
-    * 350 To de stockage pérenne
-* Réseau d’interconnexion Intel OmniPath 100 Gb/s
-* Pas d’accélérateur
-* Gestionnaire de soumission de job : [SLURM (Simple Linux Utility for Resource Management)](https://slurm.schedmd.com/documentation.html)
-    * Ordonnancement de tâches dans les files d’attentes (arbitrage)
+* 2 large memory nodes 112 CPUs, 3To RAM
+* 2 GPU node for visualization, 52 CPU (bi-processeurs 26 CPU)
+* 1,3 Po of storage dedicated to computing
+    * 1 Po for quick storage under Lustre
+    * 350 To of perennial storage
+* Interconnection network Intel OmniPath 100 Gb/s
+* No accelerator
+* Job submission manager: [SLURM (Simple Linux Utility for Resource Management)](https://slurm.schedmd.com/documentation.html)
+    * Scheduling of tasks in queues (arbitration)
 
 
 <br>
 **Fonctionnement :**
 
-  * Les utilisateurs appartenant à des groupes exécutent des jobs sur des partitions
-  * Une partition est un ensemble de nœuds
+  * Users belonging to groups run jobs on partitions
+  * A partition is a set of nodes
 
 
 <br>
-**Partitions pour les Ciradiens :**
+**Partitions for CIRAD staff :**
 
-Il faut choisir la partition sur laquelle lancer vos jobs. Il existe plusieurs partions pour les ciradiens :
+You have to choose the partition on which to launch your jobs. There are several partions for the CIRAD:
 
-
-| Partition   | Description            | Limite de <br> temps | nb nodes  | nb CPUs <br> par noeud |Mémoire par défaut * | Mémoire max |
+| Partition   | Description            | Tme Limite | nb nodes  | nb CPUs <br> per node |default memory * | max memory |
 | :---------  | :------------          | :---------:     |:--------: |:------: | :------: | :------: |
-| agap_short  | Pour des jobs rapides  | 1 h             | 71        | 28      | 4 Go     | 128 Go   |
-| agap_normal | Partition par défaut   | 2 j             | 67        | 28      | 4 Go     | 128 Go   |
-| agap_long   | Pour jobs chronophages | Pas de limite   | 67        | 28      | 4 Go     | 128 Go   |
-| agap_bigmem | calculs grosse mémoire | Pas de limite   | 1         | 112     | 28 Go    | 3 To     |
+| agap_short  | For fast jobs          | 1 h             | 71        | 28      | 4 Go     | 128 Go   |
+| agap_normal | Default partition      | 2 j             | 67        | 28      | 4 Go     | 128 Go   |
+| agap_long   | For long jobs          | Pas de limite   | 67        | 28      | 4 Go     | 128 Go   |
+| agap_bigmem | Large memory calculations | Pas de limite   | 1         | 112     | 28 Go    | 3 To     |
 
 
 
 
-$*$ La mémoire vive par noeud est limitée par défaut (voir colonne 6) mais elle peut être augmentée en ajoutant la ligne :
+$*$ The RAM per node is limited by default (see column 6) but it can be increased by adding the line :
 
-* `--mem=XG` (pour la mémoire alouée pour le job en entié)
-* ou `--mem-per-cpu=XG`  (pour la mémoire alouée pour chaque CPU)
-
-dans votre script batch (voir section [Soumission de job](#proc_soumission)) avec "X" la quantité de mémoire. Voir colonne 7 pour la quantité de mémoire max par noeud. 
-Ces 2 paramètres sont exclusifs l'un l'autre. 
+* `--mem=XG` (for the memory allocated for the whole job)
+* ou `--mem-per-cpu=XG`  (for the memory allocated for each CPU)
 
 
-
+In your batch script (see section [Job submission](#proc_soumission)) with "X" the amount of memory. See column 7 for the max memory quantity per node. 
+These 2 parameters are exclusive of each other. 
 
 
 
@@ -199,120 +182,123 @@ Ces 2 paramètres sont exclusifs l'un l'autre.
 [######################################################################################]: # 
 <br><br>
 
-# 2. Connexion au Cluster {#connexion}
+<a name="connection"></a>
+
+# 2. Cluster connection 
 
 ---
 
-C'est très simple ! La connexion au cluster de calcul haute performance se fait via le protocole SSH. Le nom d’hôte de la machine de connexion est `muse-login.meso.umontpellier.fr`.
+It is very simple! The connection to the HPC cluster is done via the SSH protocol. The hostname of the connection machine is `muse-login.meso.umontpellier.fr`.
 
-Suivant votre système d’exploitation, vous pouvez vous y connecter comme suit :
+Depending on your operating system, you can connect as follows:
 
-**Sous linux ou Mac :**
 
-Ouvrir une connexion ssh dans un terminal en tapant la commande suivante : 
+**Under linux or Mac :**
+
+Open an ssh connection in a terminal with the following command: 
 
 ```
-ssh «nom_utilisateur»@muse-login.meso.umontpellier.fr
+ssh «username»@muse-login.meso.umontpellier.fr
 ```
-Entrer ensuite votre MDP.
+Then enter your password
 
-Sous Mac, vous pouvez également utiliser le logiciel Xquartz.
+On Mac, you can also use the Xquartz software.
 
-Vous voilà maintenant connecté au cluster Muse. Le cluster Muse utilise le gestionnaire de job SLURM. C'est d'ici que vous pourez exécuter et gérer vos jobs avec les commandes spécifiques SLURM (voir plus bas pour les principales commandes). 
+You are now connected to the cluster. The MESO@LR cluster uses the SLURM job manager. From here you can run and manage your jobs with the SLURM specific commands (see section [Job submission process under SLURM](#submission)). 
 
 
 
-**Sous windows :**
 
-Installer le logiciel MobXterm (https://mobaxterm.mobatek.net/download-home-edition.html). Lors de la première connexion, il faut la configurer !
+**Under windows :**
+
+Install the MobXterm software (https://mobaxterm.mobatek.net/download-home-edition.html). The first time you connect, you have to configure it!
 
 Configuration :
 
-1. Cliquer sur le bouton Session (en haut à gauche)
-2. Une fenêtre "*Session settings*" s'ouvre alors
-3. Cliquer sur SSH (en haut à gauche)
-4. Remplir les champs suivant : 
+1. Click on the Session button (top left)
+2. A "*Session settings*" window will open
+3. Click on SSH (top left)
+4. Fill in the following fields
     a. *Remote host* : `muse-login.meso.umontpellier.fr`
-    b. Sélectionner *Specify username*
-    c. Entrer votre nom d'utilisateur
+    b. Select *Specify username*
+    c. Enter your username
     d. *Port* : 22
-5. Cliquer sur OK
+5. Click on OK
 
 
 ![](Figures/MobaXterm1-2.png)
 
 
-6. Un terminal unix s'ouvre. 
-7. Il faut ensuite entrer votre mot de passe (rien ne s'affiche lorsque vous tapez le mdp, c'est un réglage de sécurité) puis valider en appuyant sur "entrée".
-8. MobaXterm vous demande si vous voulez enregistrer le mdp pour ne plus vous le demander. C'est vous qui voyez !
+6. A unix terminal opens
+7. Then you have to enter your password (nothing is displayed when you type, it is a security setting) then validate by pressing "enter".
+8. MobaXterm asks you if you want to save the password so that it doesn't ask you again. It's up to you!
 
 ![](Figures/MobaXterm2-2.png)
 
 
-> 🤩 Pour les prochaines fois, vous n'aurez qu'à ouvrir MobaXterm et à cliquer sur votre session que vous trouverez dans l'onglet "*User sessions*" sur la gauche.  
-Vous pouvez également créer un raccourci sur votre bureau en faisant un clique droit dessus. Cela permet d'ouvrir votre session en même temps que le logiciel se lance. C'est trop bien 🤩
+> For the next times, you will just have to open MobaXterm and click on your session that you will find in the tab "*User sessions*" on the left.  
+You can also create a shortcut on your desktop by right-clicking on it. This will open your session at the same time as the software launches. It's too good 🤩
 
 
 
-Vous voilà maintenant connecté au cluster Muse. Le cluster Muse utilise le gestionnaire de job SLURM.  C'est d'ici que vous pourrez exécuter et gérer vos jobs avec les commandes spécifiques SLURM (voir section [Soumission de jobs](#soumission)). 
-
-
-
+You are now connected to the cluster. The MESO@LR cluster uses the SLURM job manager. From here you can run and manage your jobs with the SLURM specific commands (see section [Job submission process under SLURM](#submission)). 
 
 
 
 
 
-**Quelsques commandes Linux utiles :**
 
-* `ls` pour afficher le contenu du répertoir courant
-* `ls -a` pour afficher tous les fichiers (même caché) du répertoir courant
-* `cd "path"` pour changer de répertoir
-* `cd ..` pour aller au répertoir parent
-* `pwd` pour afficher le chemin absolut du répertoir courant (depuis la racine)
-* ⬆️⬇️ **Flèche haut/bas** pour naviger dans historique des commandes utilisées
+**Some useful Linux commands:**
 
-Pour plus d'info sur les commandes Linux de bases :
+* `ls` to display the contents of the current directory
+* `ls -a` to show all files (even hidden) in the current directory
+* `cd "path"` to change the directory
+* `cd ..` to go to the parent directory
+* `pwd` to show the absolute path of the current directory (from the root)
+* ⬆️⬇️ **Up/down arrow** to navigate through the history of used commands
+
+For more info on basic Linux commands :
 https://doc.ubuntu-fr.org/tutoriel/console_commandes_de_base
 
 
 
 
 
+
+
 [######################################################################################]: # 
 <br><br>
 
-# 3. Transfer de fichiers {#transfer}
+<a name="transfer"></a>
+
+# 3. File transfer
 
 ---
 
-Pour soumettre vos jobs, il va falloir envoyer vos scripts sur le cluster. Il vous faudra ensuite récupérer les fichiers générés par vos jobs. Pour ce faire, on va utiliser le logiciel FileZilla. Il est disponible sous Windows, OSX et Linux. Pour le téléchargement de fichiers volumineux du cluster vers votre machine (long avec FileZilla) il est possible d'utiliser "rsunc" (voir [annexe A](#annexes_rsunc))
+
+To submit your jobs, you will have to send your scripts on the cluster. You will then have to download the files generated by your jobs. To do this, we will use the FileZilla software. It is available for Windows, OSX and Linux. To download large files from the cluster to your machine (long with FileZilla) it is possible to use "rsync" (see [appendix C](#annexes_rsync))
 
 
+**Install FileZilla :** https://filezilla-project.org/download.php?show_all=1
 
 
-**Installer FileZilla :** https://filezilla-project.org/download.php?show_all=1
+> Note for Linux: Filezilla is available through your package manager `apt-get install filezilla`
 
-
-> **Remarque pour Linux** : Filezilla est disponible par l’intermédiaire de votre Gestionnaire de paquets `apt-get install filezilla`
-
-**Présentation de FileZilla : **
+**Introduction to FileZilla: **
 
 ![](Figures/Filezilla2.png)
 
-Pour ce connecter, remplir dans la zone de connection :
+To connect for the first time, fill in the connection field:
 
-* **Hôte** : `sftp://muse-login.meso.umontpellier.fr`
-* **Nom d'utilisateur** : votre nom d'utilisateur 
-* **Mot de passe** : votre mot de passe
+* **Host**:  `sftp://muse-login.meso.umontpellier.fr`
+* **User name** : your user name 
+* **Password** : your password
 * **Port** : 22
 
 
-> 🤩 Après la première connexion, ces informations seront enregistrées et vous pourrez vous connecter facilement en cliquant sur la petite flèche à côté de "Connexion rapide"
+> 🤩 After the first login, this information will be saved and you will be able to login easily by clicking on the little arrow next to "Quick Login"
 
-Vous pouvez transférer un fichier dans un sens ou dans l'autre en cliquant droit dessus puis cliquer sur "Téléversé" ou "Télécharger".
-
-
+You can upload and download a file either way by right clicking on it and then clicking on "Upload" or "Download".
 
 
 
@@ -320,76 +306,6 @@ Vous pouvez transférer un fichier dans un sens ou dans l'autre en cliquant droi
 
 
 
-
-[######################################################################################]: # 
-<br><br>
-
-# 4. Les espaces de stockage  {#stockage}
-
----
-
-Il y a plusieurs espaces de stockage. Les fichiers déposés sur le répertoire "scratch" sont temporaires pour effectuer vos calculs, et sont automatiquement supprimés à 60 jours. Les documents destinés à être conservés doivent être déposés sur votre répertoire "home".
-
-Email de Bertrand Pitollat du 19/10/2021 :
-
-
-Vous disposez de plusieurs espaces de stockage sur le cluster Muse :
-
-- **home directory** : C'est votre point d'entrée sur le cluster Muse.
-  * Il est hébergé sur la baie NFS du cluster Muse.
-  * Il n'est ni sauvegardé ni répliqué.
-  * Il est limité à un quota de 50 Go (hors autres espaces de stockage).
-  * Il est accessible en lecture et en écriture depuis les noeuds de login et en lecture seule depuis les noeuds de calcul.
-
-- **répertoire personnel sur la baie répliquée : lien replicated**
-  * Il est hébergé sur la baie NetApp du cluster Muse.
-  * Ce répertoire est personnel.
-  * Il est destiné au stockage long terme des données personnelles.
-  * Il est accessible via le lien replicated de votre home directory (par exemple, /home/pitollatb/replicated => /storage/replicated/cirad_users/pitollatb).
-  * Il est sauvegardé et répliqué sur une baie de secours.
-  * Il est limité à un quota de 500Go.
-  * Il est accessible en lecture et en écriture depuis les noeuds de login et de calcul.
-
-- **espace projets / unités / équipes sur la baie répliquée : lien projects**
-  * Cet espace est hébergé sur la baie NetApp du cluster Muse.
-  * Il est destiné au stockage long terme des données projets / unités / équipes.
-  * L'espace est accessible via le lien projects de votre home directory (par exemple, /home/pitollatb/projects => /storage/replicated/cirad/projects).
-  * Il est sauvegardé et répliqué sur une baie de secours.
-  * Il est partitionné par répertoire projet, unité ou équipe avec un quota initial de 5To pour chaque répertoire.
-  * Chaque répertoire projet peut être associé à un groupe d'utilisateurs à définir par le collectif.
-  * L'espace est accessible en lecture et en écriture depuis les noeuds de login et de calcul.
-
-- **espace work : lien work_agap**
-  * Il est hébergé sur la baie NFS du cluster Muse.
-  * Cet espace de stockage précédemment dédié au stockage des données projets ne doit plus être utilisé.
-  * Les données s'y trouvant doivent être transférées dans le nouvel espace projets / unités / équipes.
-  * Il n'est ni sauvegardé ni répliqué.
-  * Il est accessible via le lien work_agap de votre home directory (par exemple, /home/pitollatb/work_agap => /nfs/work/agap).
-  * Il est accessible en lecture et en écriture depuis les noeuds de login et en lecture seule depuis les noeuds de calcul.
-
-- **espace personnel scratch : lien scratch**
-  * Il est hébergé sur la baie Lustre du cluster Muse.
-Ce espace est personnel.
-  * Il est rapide et performant et doit être utilisé pour héberger les données temporaires de calcul.
-  * A la fin du calcul, les données doivent être supprimées ou déplacées.
-  * Il est accessible via le lien scratch de votre home directory (par exemple, /home/pitollatb/scratch => /lustre/pitollatb).
-  * Il n'est ni sauvegardé ni répliqué.
-  * Il est limité dans le temps : les données vieilles de plus de 2 mois seront bientôt automatiquement supprimées.
-  * Il est accessible en lecture et en écriture depuis les noeuds de login et de calcul.
-
-- **banques de données scratch : /lustre/agap**
-  * Cet espace communautaire stocke les banques de données.
-  * Il est hébergé sur la baie Lustre du cluster Muse pour optimiser les calculs.
-  * Il n'est ni sauvegardé ni répliqué.
-  * Il ne doit pas être utilisé pour stocker de données personnelles.
-  * Il est accessible à l'emplacement /lustre/agap.
-  * Les banques maintenues par biomaj sont accessibles à l'emplacement /lustre/agap/BANK/biomaj.
-
-- **espace web :** Par ailleurs, il existe un espace dédié pour héberger les données affichées/diffusées par nos différents services web (genome hubs, ...).
-Nous contacter si nécessaire.
-
-**Important :**
-Je vous rappelle que pour des raisons de performance du cluster Muse, toutes les écritures issues des jobs doivent être redirigées vers votre répertoire scratch et qu'il faut bannir toute lecture intensive depuis les espaces NFS et NetApp.
 
 
 
@@ -399,64 +315,451 @@ Je vous rappelle que pour des raisons de performance du cluster Muse, toutes les
 [######################################################################################]: # 
 <br><br>
 
-# 5. Procedure de soumission de jobs R  {#proc_soumission}
+<a name="storage"></a>
+
+# 4. The storage spaces
 
 ---
 
-Dans cette section j'explique comment soumettre des jobs en parallèle sous R. 
+There are several storage spaces. Files placed on the "scratch" directory are temporary for your calculations, and are automatically deleted after 60 days. The documents intended to be kept must be deposited on your "home" or "replicated" directory.
+
+Email from Bertrand Pitollat on november 19, 2021 :
 
 
-Pour illustrer la soumission d'un job en parallèle, nous utiliserons l'Exemple_R. Dans cet exemple bidon, je répète l'opération 2*k pour k=1 à 50. Je veux paralléliser ces opérations sur 10 coeurs pour aller 10 fois plus vite. Je sauvegarde chaque résultat dans un ".Rdata" dans un fichier "results".
+You have several storage spaces on the MESO@LR cluster:
+
+* **home directory**:
+  * Storage limit: 50Go
+  * Time limit: no
+  * Writable from calculation nodes: **NO**
+  * Visiibility: personnal 
+  * Hosted array: NFS
+  * Replicated: NO
+  * Comment: This is your entry point to the cluster
+  
+* **replicated directory**:
+  * Storage limit: 500Go
+  * Time limit: no
+  * Writable from calculation nodes: **YES**
+  * Visiibility: personnal 
+  * Hosted array: NetApp
+  * Replicated: Yes
+  * Comment: Long-term storage of personal data with replication, there is a shortcut from your home directory
+
+* **scratch directory**:
+  * Storage limit: no
+  * Time limit: **2 months**
+  * Writable from calculation nodes: **YES**
+  * Visiibility: personnal 
+  * Hosted array: Lustre
+  * Replicated: NO
+  * Comment: Fast and powerful and should be used to host temporary calculation data, there is a shortcut from your home directory
+  
+* **projects directory**:
+  * Storage limit: 5To
+  * Time limit: no
+  * Writable from calculation nodes: **YES**
+  * Visiibility: specific user group for each subdirectory
+  * Hosted array: NetApp
+  * Replicated: Yes
+  * Comment: Long-term storage of shared data, Partitioned by project, unit or team directory with replication, there is a shortcut from your home directory
+  
 
 
-Pour soumettre un job, vous devez choisir entre :
-
-  * Un mode d’exécution en temps réel avec la commande srun directement dans le terminal (non détaillé dans ce tuto)
-  * Un mode d’exécution différé en définissant son job dans un script ***batch*** (.sh) et en le lancer à l’aide de la commande `sbatch` dans le terminal
-
-
-⚠️ **J'explique ici uniquement la procédure différée avec la commande `sbatch`** 
-
-Cette procédure consiste à définir les paramètres d'exécution dans un fichier *batch* (.sh)
-
-Ce fichier peut être éditer avec [**Notepad++**](https://notepad-plus-plus.org/downloads/) ou **Rstudio**.
-Pour le créer : 
-
-* avec **Notepad++** : *File > New* puis sauvegarder avec l'extension *.sh*
-* avec **Rstudio** : *File > New File > Shell Script*
-
-👉 Mais le plus simple est de reprendre un script ***batch*** (.sh) qu'on a sous la main d'un autre projet.
+> **Warning:** For cluster performance reasons, all writes from jobs must be redirected to your scratch directory and that you must ban all intensive reads from NFS and NetApp spaces.
 
 
 
-💥🔥 **Alerte Windows** 🚨🧯 **Attention aux retours à la ligne !!!**  
-Par défault dans Windows les retours chariot sont de type DOS et ils ne sont pas compatible avec Linux ou Max de type UNIX (Posix LF) et ça plantle !  
-Il faut soit :
 
-* utiliser **Notepad++** en faisant :  
-*Edition > Convertir les sauts de ligne > Convertir en format UNIX (LF)*  
-⚠️ a faire pour chaque nouveau fichier
-* utiliser **Rstudio** en réglant l'option des retours à la ligne de type Unix :  
+
+
+[######################################################################################]: # 
+<br><br>
+
+<a name="proc_soumission"></a>
+
+# 5. Job submission process under SLURM 
+
+---
+
+In this section I explain how to submit R jobs on many CPUs.
+
+To illustrate it, we will use the example "Examples/Example_R_openMP_for_loop". In this simple example, I want to calculate the opperation $n*k*p$ for $n=1, \dots, 4$, $k=1, \dots, 3$ and $p=1, \dots, 10$. Thus, it leads to 120 operrations which can be done easily in for loop.
+I want to parallelize these operations on 10 cores to go 10 times faster. I save each result in a ".Rdata" in a "results" file.
+
+
+To submit a job, you must choose between :
+
+  * A real-time execution mode with the srun command directly in the terminal (not detailed in this tutorial)
+  * A deferred execution mode by defining the job in a ***batch*** (.sh) script and launching it with the `sbatch` command in the terminal
+
+
+⚠️ **I explain here only the deferred mode with the `sbatch` command** 
+
+This procedure consists in defining the execution parameters in a *batch* file (.sh).
+
+This file can be edited with
+[**Notepad++**](https://notepad-plus-plus.org/downloads/) or **Rstudio**.
+To create it: 
+
+* using **Notepad++** : *File > New* then save using the extension *.sh*
+* using **Rstudio** : *File > New File > Shell Script*
+
+👉 But the easiest way is to re-use a ***batch*** (.sh) script that you have on hand from another project.
+
+
+💥🔥 **Windows warning**: **Beware of line breaks !!!**  
+By default in Windows the line breaks are of type DOS and they are not compatible with Linux or Mac of type UNIX (Posix LF) and that crashes !  
+You need either :
+
+* use **Notepad++** by doing :  
+*Edit > Convert line breaks > Convert to UNIX format (LF)*  
+⚠️ to do for each new file
+* utiliser **Rstudio**  by setting the Unix-like line break option:  
 *Tools > Global options > Code > Saving > Serialization > Line ending conversion > Posix (LF)*  
-A faire qu'une seule fois ❤️💪 Il sait tout faire ce Rstudio ! 💪❤️ 
+To be done only once! This Rstudio can do everything! 💪
 
 
 
 
 
-**Prenons le fichier *batch* de l'Exemple_R_openMP_RF** pour voir sa construction
+**Let's take the *batch* file of the Example_R_openMP_for_loop** to see its construction
 
 
 ```
 #!/bin/bash
+#SBATCH --partition=agap_short  # The partition
+#SBATCH --job-name ex1          # Job name
+#SBATCH --nodes=1               # NB nodes (MPI processe, openMP -> 1)
+#SBATCH --ntasks=1              # NB tasks (MPI processe, openMP -> 1)
+#SBATCH --ntasks-per-node=1     # NB tasks per node (MPI processe, openMP -> 1)
+#SBATCH --cpus-per-task=10      # NB CPUs per task
+#SBATCH --mem-per-cpu=100M      # Memory per CPU
+#SBATCH --time=00:10:00         # Time limite
+
+
+
+module purge 
+module load R/4.1.0 R/packages/4.1.0
+
+
+
+# OpenMP runtime settings
+export OMP_NUM_THREADS=$SLURM_CPUS_ON_NODE
+
+cd $SLURM_SUBMIT_DIR    # To go to the directory where the .sh is executed
+
+mkdir ./Rout            # Create the "Rout"" folder for the R console outputs
+R CMD BATCH ./main_script.R    ./Rout/main_script.Rout # submit the R job
+
+# To get job information after running (used memory, time, ...) in the .out file
+seff $SLURM_JOB_ID
+```
+
+This file is divided into 3 parts:
+
+* 1st part: each line starting with `#SBATCH` describes a **SLURM** parameter <br>
+Many options exist, refer to the cluster documentation for more information (https://meso-lr.umontpellier.fr/documentation-utilisateurs/).
+
+* 2nd part: Then you have to load the **modules** (software, compilers) with the command `module load`. 
+[Modules are based on a system of dependencies and conflicts set by the person who installed or compiled the software or library in question]: # <br> <br>
+We start by unloading all the modules that can be loaded.
+To use the R software, depending on the version, you have to load the `cv-standard` module and then `R/version` or `R` (load the latest version 4.2.2). If your code uses another language (c++, python, ...), you will have to load the modules accordingly. To see the list of available modules: `module avail`. More information about modules in the cluster documentation (https://meso-lr.umontpellier.fr/documentation-utilisateurs/) section "Muse Cluster software environment" and the lab: https://meso-lr.umontpellier.fr/wp-content/uploads/2020/03/1-TP-Environment_module3.pdf. <br>
+The available versions of R are :
+    * locally (installed by muse@lr) :
+        * `R/3.6.1`
+        * `R/3.6.1-tcltk `
+        * `R/3.6.3 `
+        * `R/4.0.2`
+        * `R/4.2.2`
+    * in *cv-standard* (most standard compilers and libraries) :
+        * `R/3.3.1`
+        * `R/3.4.3`
+    * in *agap_id-bin* (for Cirad agents) :
+        * `R/4.1.0`
+        * `R/packages/3.6.1` (lot of pre-installed packages for R/3.6.1)
+        * `R/packages/3.6.2` (lot of pre-installed packages for R/3.6.2)
+        * `R/packages/4.0.2` (lot of pre-installed packages for R/4.0.2)
+        * `R/packages/4.1.0` (lot of pre-installed packages for R/4.1.0)
+        * `R/packages/asreml_v3` <br>
+        
+**I advise you to specify the R version you want to work with so as not to be surprised if a new version is installed.**
+<br>
+You can also install your own software.
+
+* 3rd part: This last part allows to submit the job.
+We start defining the OpenMP execution parameters. <br>
+Then, we set the path to the current directory with the command `cd $SLURM_SUBMIT_DIR` (this avoids having to write the whole absolute path (from the root) of the script). <br>
+Finally the line to run the R script: `R CMD BATCH ` followed by the relative path to the script, followed by the relative path to the **Rout** to write the output (which is normally displayed in the Rstudio console). The latter must be saved in a "Rout" folder, so create it with the command `mkdir ./Rout`.
+
+
+To launch your code, you have to execute in the terminal (after being placed in the right directory) the associated batch file with the command:
+```
+sbatch job_submission.sh
+```
+
+
+
+
+**Warning** : if your code requires specific packages, you must install them before. To do this, in the terminal, load the modules then launch R :
+```
+module load cv-standard R/4.0.1
+R
+```
+Then install the packages (you will have to choose a mirror):
+```
+install.packages("doParallel")
+```
+Finally quit R with the command `q()`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[######################################################################################]: # 
+<br><br>
+
+<a name="commands"></a>
+
+# 6. Useful SLURM commands
+
+---
+
+To see the status of all jobs (all users)
+```
+squeue
+```
+
+
+To see the status of your jobs 
+```
+squeue -u $USER -o '%.18i %.9P %.20j %u %.8T %.10M %.9l %.6D %R'
+```
+
+
+To kill a job
+```
+scancel <JOB_ID>
+```
+
+
+To see the number of CPUs available per node (very useful to choose the number of cores to pass in front of the whole queue)
+```
+sinfo -o "%P %n %C"
+```
+
+* 1st column (%P) gives the partition
+* 2nd column (%n) gives the node identifier
+* 3rd column (%C) gives the number of CPUs per state in the format "Allocated/Idle/Other/Total"
+
+![](Figures/sinfo.png)
+
+
+
+See the amount of memory consumed by the job after its execution: 
+```
+sacct -o JobID,Node,AveRSS,MaxRSS,MaxRSSTask,MaxRSSNode,TRESUsageInTot%250 -j <JOB_ID> 
+```
+
+
+
+More informations here : https://slurm.schedmd.com/man_index.html
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[######################################################################################]: # 
+<br><br>
+
+<a name="rstudio"></a>
+
+# 7. Rstudio on the cluster
+
+---
+
+http://193.52.26.138/rstudio/auth-sign-in
+
+Rstudio is isolated on a dedicated node (96 CPUs and 3TB of memory) and is shared with all Rstudio users.
+
+
+**It is intended for the development of scripts but it is important to avoid launching heavy calculations directly on it.
+Once developed, it is important to submit them via batch script.
+
+
+
+
+
+
+
+[######################################################################################]: # 
+<br><br>
+
+<a name="resources"></a>
+
+# 8. Resources 
+
+---
+
+**Mailing list of self-help:**
+meso-help@umontpellier.fr
+
+
+**MUSE MESO@LR cluster website:**
+https://meso-lr.umontpellier.fr/documentation-utilisateurs/
+
+
+**MUSE MESO@LR cluster presentation:**
+https://meso-lr.umontpellier.fr/wp-content/uploads/2019/11/1-Presentation_cluster_Muse.pdf
+
+**Lab-Environment Module:**
+https://meso-lr.umontpellier.fr/wp-content/uploads/2020/03/1-TP-Environment_module3.pdf
+
+**Lab-SLURM :**
+https://meso-lr.umontpellier.fr/wp-content/uploads/2020/04/1-TP-SLURM3.pdf
+
+
+**Basic Linux commandes:**
+https://doc.ubuntu-fr.org/tutoriel/console_commandes_de_base
+
+**Quick Intro to Parallel Computing in R:**
+https://nceas.github.io/oss-lessons/parallel-computing-in-r/parallel-computing-in-r.html
+
+
+**Cheat sheet for SLURM cluster (in french):**
+http://www.idris.fr/media/su/idrismemento1.pdf
+
+
+
+
+
+
+
+[######################################################################################]: # 
+
+<br><br>
+
+<a name="annexes"></a>
+
+# Annexes
+
+---
+
+
+
+<a name="annexes_examples"></a>
+
+## A. Examples
+
+
+
+[-----------------------------------------------------------]: # 
+
+
+<br>
+
+<a name="ex_R_forloop"></a>
+
+### A.1. R OpenMP example parallel for loop
+
+Let's say I need to execute a function or code on different input parameters or data (or both). I can then do this with a "for" loop.
+
+For example, I want to apply the function `my_fct = n * p * k` on different input parameters:
+
+* `n` = 1 or 2
+* `p` = 1, 2 or 3
+* `k` = 1 or 2
+
+This makes `2*3*2 = 12` combinations and thus 12 executions of my function. 
+I can do this very well with the R code:
+
+```
+# Function definition
+my_fct <- function(n, p, k) return(n*p*k)
+
+# Parameter grid definition
+pars <-  expand.grid(n = 1:2, p = 1:3, k = 1:10)
+
+# execution using a for loop
+for(i in 1:nrow(pars)){
+  result <- my_fct(n=pars$n[i], p=pars$p[i], k=pars$k[i])
+  save(result, file = paste0("results/my_result_n=", pars$n[i], "p=", pars$p[i], "k=", pars$k[i], ".Rdata") )
+}
+```
+
+This can be very long depending on the application, but **a for loop parallelizes very well in openMP**.
+
+> Each task (iteration of the loop) needs to access what has been loaded in the environment before the loop, we need to be in shared memory $\rightarrow$ **openMP**).
+
+This is easily done with the `foreach` function of the package of the same name. However, it is necessary to declare a certain number of CPUs available with the `registerDoParallel` function of the `doParallel` package. 
+
+**The R script becomes:**
+
+```
+library(doParallel)
+
+# Set the number of cores
+doParallel::registerDoParallel(cores = 10)
+
+# function definition
+my_fct <- function(n, p, k) return(n*p*k)
+
+# Parameter grid definition
+pars <-  expand.grid(n = 1:2, p = 1:3, k = 1:10)
+
+# Parallel for loop
+foreach::foreach(i = 1:nrow(pars), .verbose = FALSE) %dopar% {
+  result <- my_fct(n=pars$n[i], p=pars$p[i], k=pars$k[i])
+  save(result, file = paste0("results/my_result_n=", pars$n[i], "p=", pars$p[i], "k=", pars$k[i], ".Rdata") )
+
+  return() # I return nothing because I save each result in ".Rdata" object in folder "results"
+}
+```
+
+> This R script can be run on your PC (be careful to adjust the number of CPUs). To detect the number of CPUs on your PC, you can use the `parallel::detectCores()` function. Do not take more than max-1 on your PCs!
+
+
+
+**The batch file for the job submission :**
+```
+#!/bin/bash
 #SBATCH --partition=agap_short  # la partition
-#SBATCH --job-name openMP_RF    # nom du job
+#SBATCH --job-name ex1          # nom du job
 #SBATCH --nodes=1               # NB noeuds (MPI processes, openMP -> 1)
 #SBATCH --ntasks=1              # NB tâches (MPI processes, openMP -> 1)
 #SBATCH --ntasks-per-node=1     # NB tâches par noeud (MPI processes, openMP -> 1)
 #SBATCH --cpus-per-task=10      # NB CPUs par task
 #SBATCH --mem-per-cpu=100M      # Mémoire par CPU
-#SBATCH --time=0-00:10:00       # Temps limite (10 min)
+#SBATCH --time=00:10:00         # Temps limite
+#
+#SBATCH --mail-type=begin       # send email when job begins
+#SBATCH --mail-type=end         # send email when job ends
+#SBATCH --mail-user=benjamin.heuclin@cirad.fr
 
 module purge
 module load cv-standard
@@ -465,234 +768,47 @@ module load R/3.6.1
 # OpenMP runtime settings
 export OMP_NUM_THREADS=$SLURM_CPUS_ON_NODE
 
-cd $SLURM_SUBMIT_DIR   # Pour se mettre dans le répertoir où est exécuter le .sh
+cd $SLURM_SUBMIT_DIR
 
-mkdir ./Rout           # Crer le dossier Rout pour les sorties console de R
-mkdir ./results        # créer le dossier "results" pour la sauvegarde de mes résultats
-R CMD BATCH ./script_RF.R    ./Rout/script_RF.Rout
-```
+mkdir ./Rout 
+mkdir ./results
+R CMD BATCH ./main_script.R    ./Rout/main_script.Rout
 
-Ce fichier se décompose en 3 parties :
-
-* 1re partie : chaque ligne commençant par `#SBATCH` décrit un paramètre **SLURM** <br>
-Pleins d'options existent, se référer à la documentation du cluster pour plus d'info (https://meso-lr.umontpellier.fr/documentation-utilisateurs/).
-
-* 2ème partie : Il faut ensuite charger les **modules** (logiciels, compilateurs) avec la commande `module load`. 
-[Les modules reposent sur un système de dépendances et de conflits fixés par la personne ayant installé ou compilé le logiciel ou la librairie visée.]: # 
-On commance par décharcher tous les modules qui peuvent être chargés.
-Pour utiliser le logiciel R, en fonction de la version, il faut charger le module `cv-standard` et ensuite `R/version` ou `R` (charge la dernière version 4.2.2). Si votre code utilise un autre langage (c++, python, ...), il faudra alors charger les modules en conséquence. Pour voir la liste des modules disponibles : `module avail`. Plus d'info sur les modules dans la documentation du cluster (https://meso-lr.umontpellier.fr/documentation-utilisateurs/) section "Environnement logiciel du Cluster Muse" et le TP : https://meso-lr.umontpellier.fr/wp-content/uploads/2020/03/1-TP-Environment_module3.pdf. Je vous conseille de précicer la version de R avec laquelle vous voulez travailler pour ne pas avoir de surprise si une nouvelle version est installée. Les versions de R disponibles sont :
-    * en local (installé par muse@lr) :
-        * `R/3.6.1`
-        * `R/3.6.1-tcltk `
-        * `R/3.6.3 `
-        * `R/4.0.2`
-        * `R/4.2.2`
-    * dans cv-standard (la majorité des compilateurs et bibliothèques standards) :
-        * `R/3.3.1`
-        * `R/3.4.3`
-    
-**Vous pouvez aussi installer vos propres logiciels.**
-
-* 3ème partie : Enfin la ligne pour exécuter le script R : `R CMD BATCH ` suivie du chemin d'accès vers le script, suivi du chemin d'accès vers le **Rout** pour écrire les sorties (ce qui s'affiche dans la console de Rstudio en temps normal). **Pensez à créer le fichier Rout dans votre projet**.
-
-
-
-
-Pour lancer votre code, il faut exécuter dans le terminal (après s'être placé dans le bon répertoire) le fichier batch associé avec la commande :
-```
-sbatch job_submission.sh
+# Rscript ./main_script.R 
 ```
 
 
 
-
-**Attention** : si votre code nécessite le chargement de packages, il faut impérativement les installer avant. Pour ce faire, dans le terminal, charger les modules puis lancer R :
-```
-module load cv-standard R/3.6.1
-R
-```
-Installer ensuite les packages (il vous faudra choisir un miroir) :
-```
-install.packages("doParallel")
-```
-Enfin quitter R avec la commande `q()`.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-[######################################################################################]: # 
-<br><br>
-
-# 6. Les commandes SLURM utiles {#commandes}
-
----
-
-Pour voir l'état de tous les jobs (de tous les utilisateurs)
-```
-squeue
-```
-
-
-Pour voir l'état de vos jobs 
-```
-squeue -u $USER -o '%.18i %.9P %.20j %u %.8T %.10M %.9l %.6D %R'
-```
-
-
-Pour tuer un job
-```
-scancel <JOB_ID>
-```
-
-
-Pour voir le nombre de CPUs disponibles par noeud (très utile pour choisir le nombre de coeurs pour passer devant toute la fille d'attente)
-```
-sinfo -o "%P %n %C"
-```
-
-* La 1er colonne (%P) donne la partition
-* La 2ème colonne (%n) donne l'identifiant du noeud
-* La 3ème colonne (%C) donne le nombre de CPUs par état dans le format "alloué/libre/autre/total"
-
-![](Figures/sinfo.png)
-
-
-
-Consulter la quantité de mémoire consommée par le job après son exécution : 
-```
-sacct -o JobID,Node,AveRSS,MaxRSS,MaxRSSTask,MaxRSSNode,TRESUsageInTot%250 -j <JOB_ID> 
-```
-
-
-
-Plus d'info sur les commandes ici : https://slurm.schedmd.com/man_index.html
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-[######################################################################################]: # 
-<br><br>
-
-# 7. Rstudio sur le cluster {#rstudio}
-
----
-
-http://193.52.26.138/rstudio/auth-sign-in
-
-Rstudio est isolé sur un noeud dédié (96 CPUs et 3To de mémoire) et est partagé avec tous les utilisateurs Rstudio.
-
-
-**Il est destiné à la mise au point des scripts mais il faut éviter de lancer des calculs lourds directement dessus.
-Une fois mis au point il vaut mieux les soumettre via script batch.**
-
-
-
-
-
-
-
-
-
-[######################################################################################]: # 
-<br><br>
-
-# 8. Ressources {#ressources}
-
----
-
-**Mailing list d'entraides :**
-meso-help@umontpellier.fr
-
-
-**Site web sur cluster MUSE MESO@LR :**
-https://meso-lr.umontpellier.fr/documentation-utilisateurs/
-
-
-**Présentation du cluster MUSE MESO@LR :**
-https://meso-lr.umontpellier.fr/wp-content/uploads/2019/11/1-Presentation_cluster_Muse.pdf
-
-**TP-Environment Module :**
-https://meso-lr.umontpellier.fr/wp-content/uploads/2020/03/1-TP-Environment_module3.pdf
-
-**TP-SLURM :**
-https://meso-lr.umontpellier.fr/wp-content/uploads/2020/04/1-TP-SLURM3.pdf
-
-
-**Commandes Linux de bases :**
-https://doc.ubuntu-fr.org/tutoriel/console_commandes_de_base
-
-**Quick Intro to Parallel Computing in R (et les ref dedans) : **
-https://nceas.github.io/oss-lessons/parallel-computing-in-r/parallel-computing-in-r.html
-
-
-
-
-
-
-
-
-
-
-[######################################################################################]: # 
-
-<br><br>
-
-# Annexes {#annexes}
-
----
-
-## A. Les exemples {#annexes_exemples}
 
 [-----------------------------------------------------------]: # 
 
-### A.1. Exemple R OpenMP sur calibration d'une RF {#ex_R_openMP}
-
-> ⚠️ ATTENTION Pour cet exemple, il faut installer les packages "doParallel", "caret" et "randomForest" dans votre R/3.6.1.
 
 
-Dans cette exemple, je souhaite calibrer un modèle de forêts aléatoires (random forest) sur les données "iris" (de base dans R).
-
-**Description des données (`?iris`)** : This famous (Fisher's or Anderson's) iris data set gives the measurements in centimeters of the variables sepal length and width and petal length and width, respectively, for 50 flowers from each of 3 species of iris. The species are Iris setosa, versicolor, and virginica.
-
-> J'ai cumulé 3 fois le jeu de données pour arriver à 450 observations sinon c'est trop rapide.
 
 
-L'objectif ici est de retrouver la variété en fonction des measures faites sur les sépales et pétales. On est donc dans une classification et on va réaliser ça avec un Random Forest.
+<a name="ex_R_openMP"></a>
 
-Pour ce faire il faut calibrer le paramètre "mtry" (Number of variables randomly sampled as candidates at each split). On réalise alors une CV à l'aide du package `caret` et sa fonction `train`. Ce processus implique de lancer plusieurs forêts aléatoires avec des paramètres différents. Cela se parallélise très bien (10 RF en parallèle sur 10 coeurs dans l'exemple (1 par coeur)). Le package `caret` gère la paralélisation à votre place avec l'option `allowParallel = TRUE` dans la fonction `trainControl` (mode OpenMP). Il faut juste déclarer un nombre de CPUs disponible pour la parallélisation en début du script R. Cela peut se faire à l'aide du package `doParallel` :
+### A.2. R OpenMP example for random forest calibration
+
+> ⚠️ ATTENTION: For this example, you need to install the packages "doParallel", "caret" and "randomForest" in your R/3.6.1.
+
+
+In this example, I want to calibrate a random forest model on the data "iris" (basic in R).
+
+**Data description (`?iris`)** : This famous (Fisher's or Anderson's) iris data set gives the measurements in centimeters of the variables sepal length and width and petal length and width, respectively, for 50 flowers from each of 3 species of iris. The species are Iris setosa, versicolor, and virginica.
+
+> I cumulated 3 times the dataset to reach 450 observations otherwise it is too fast.
+
+
+The objective here is to find the variety according to the measures made on the sepals and petals. We are therefore in a classification and we will achieve this with a Random Forest.
+
+To do this we need to calibrate the parameter "mtry" (Number of variables randomly sampled as candidates at each split). We then perform a CV using the `caret` package and its `train` function. This process involves running several random forests with different parameters. This parallelizes very well (10 RF in parallel on 10 cores in the example (1 per core)). The `caret` package handles the parallelization for you with the `allowParallel = TRUE` option in the `trainControl` function (OpenMP mode). You just need to declare a number of CPUs available for parallelization at the beginning of the R script. This can be done with the `doParallel` package:
 
 ```
 doParallel::registerDoParallel(cores=10)
 ```
 
-le script R ressemble à :
+the R script looks like :
 ```
 library(doParallel, caret, randomForest)
 
@@ -729,125 +845,23 @@ table(data_test$Species, predict(fit_RF, new=data_test))
 
 ```
 
-> Ce script R peut très bien s'éxécuter sur votre PC (attention à adapter le nombre de CPU). Pour détecter le nombre de CPU sur votre PC, vous pouvez utiliser la fonction `parallel::detectCores()`. Ne pas prendre plus que le max-1 sur vos PC !
-
+> This R script can be run on your PC (be careful to adjust the number of CPUs). To detect the number of CPUs on your PC, you can use the `parallel::detectCores()` function. Do not take more than max-1 on your PCs!
 
 
 <br>
-**Astuce :**
-On peut récupérer dans R le nombre de CPUs qu'on a déclaré dans le batch (.sh) (variable d'environnement `SLURM_JOB_CPUS_PER_NODE`) avec la commande R :
+**Tip:**
+We can get in R the number of CPUs we declared in the batch (.sh) (environment variable `SLURM_JOB_CPUS_PER_NODE`) with the command R :
 ```
 nb_CPUs <- as.integer(Sys.getenv("SLURM_JOB_CPUS_PER_NODE")) 
 doParallel::registerDoParallel(cores=nb_CPUs)
 ```
-Cela évite les erreurs ;)
+This avoids mistakes ;)
 
 
 
 
 
 
-
-
-
-
-[-----------------------------------------------------------]: # 
-<br>
-
-### A.2. Exemple R openMP for loop {#ex_R_forloop}
-
-
-
-
-Imaginon que j'ai besoin d'exécuter une fonction ou un code sur différents paramètres d'entrée ou données (ou les deux). Je peux alors faire ça avec une boucle "for".
-
-Par exemple, je veux appliquer la fonction `my_fct = n * p * k` sur différents paramètres d'entrée :
-
-* `n` = 1 ou 2
-* `p` = 1, 2 ou 3
-* `k` = 1 ou 2
-
-Celà fait `2*3*2 = 12` combinaisons et donc 12 exécutions de ma fonction. 
-Je peux très bien faire cela avec le code R :
-
-```
-# Définition de ma fonction
-my_fct <- function(n, p, k) return(n*p*k)
-
-# Définition d'une grille de paramètres que je veux faire varier
-pars <-  expand.grid(n = 1:2, p = 1:3, k = 1:10)
-
-# exécution de ma fonction sur les différentes combinaisons de paramètres
-for(i in 1:nrow(pars)){
-  result <- my_fct(n=pars$n[i], p=pars$p[i], k=pars$k[i])
-  save(result, file = paste0("results/my_result_n=", pars$n[i], "p=", pars$p[i], "k=", pars$k[i], ".Rdata") )
-}
-```
-
-Celà peut-être très long en fonction de l'application, or **une boucle "for" se parallélise très bien en openMP**.
-
-> Chaque tâche (itération de la boucle) a besoin d'accéder à ce qui a été chargé dans l'environnement avant la boucle, on a besoin d'être en mémoire partagée $\rightarrow$ **openMP**).
-
-Cela se fait facilement avec la fonction `foreach` du package du même nom. Il faut toutefois déclarer un certain nombre de CPU disponible avec la fonction `registerDoParallel` du package `doParallel`. 
-
-**Le script R devient :**
-
-```
-library(doParallel)
-
-# Set the number of cores
-doParallel::registerDoParallel(cores = 10)
-
-# Définition de ma fonction
-my_fct <- function(n, p, k) return(n*p*k)
-
-# Définition d'une grille de paramètres que je veux faire varier
-pars <-  expand.grid(n = 1:2, p = 1:3, k = 1:10)
-
-# Parallel for loop
-foreach::foreach(i = 1:nrow(pars), .verbose = FALSE) %dopar% {
-  result <- my_fct(n=pars$n[i], p=pars$p[i], k=pars$k[i])
-  save(result, file = paste0("results/my_result_n=", pars$n[i], "p=", pars$p[i], "k=", pars$k[i], ".Rdata") )
-
-  return() # I return nothing because I save each result in ".Rdata" object in folder "results"
-}
-```
-
-> Ce script R peut très bien s'éxécuter sur votre PC (attention à adapter le nombre de CPU). Pour détecter le nombre de CPU sur votre PC, vous pouvez utiliser la fonction `parallel::detectCores()`. Ne pas prendre plus que le max-1 sur vos PC !
-
-
-
-**Le fichier batch pour la soummision du job :**
-```
-#!/bin/bash
-#SBATCH --partition=agap_short  # la partition
-#SBATCH --job-name ex1          # nom du job
-#SBATCH --nodes=1               # NB noeuds (MPI processes, openMP -> 1)
-#SBATCH --ntasks=1              # NB tâches (MPI processes, openMP -> 1)
-#SBATCH --ntasks-per-node=1     # NB tâches par noeud (MPI processes, openMP -> 1)
-#SBATCH --cpus-per-task=10      # NB CPUs par task
-#SBATCH --mem-per-cpu=100M      # Mémoire par CPU
-#SBATCH --time=00:10:00         # Temps limite
-#
-#SBATCH --mail-type=begin       # send email when job begins
-#SBATCH --mail-type=end         # send email when job ends
-#SBATCH --mail-user=benjamin.heuclin@cirad.fr
-
-module purge
-module load cv-standard
-module load R/3.6.1
-
-# OpenMP runtime settings
-export OMP_NUM_THREADS=$SLURM_CPUS_ON_NODE
-
-cd $SLURM_SUBMIT_DIR
-
-mkdir ./Rout 
-mkdir ./results
-R CMD BATCH ./main_script.R    ./Rout/main_script.Rout
-
-# Rscript ./main_script.R 
-```
 
 
 
@@ -857,33 +871,34 @@ R CMD BATCH ./main_script.R    ./Rout/main_script.Rout
 [-----------------------------------------------------------]: # 
 <br>
 
-### A.3. Exemple R array {#ex_R_array}
+<a name="ex_R_array"></a>
 
-Le type de soummision "array" est adapté pour exécuter un code (une fonction) plusieurs fois avec des paramètres différents en entrée ou sur des données différentes (ou les deux).
+### A.3. R array example
 
-Reprenons l'[exemple R de la boucle for](#ex_R_forloop) juste au dessus. 
-Dans cet exemple, je souhaite exécuter la fonction `my_fct=n*p*k` sur différents paramètres d'entrée :
+The "array" subroutine type is suitable for executing a code (a function) several times with different input parameters or on different data (or both).
 
-* `n` = 1 ou 2
-* `p` = 1, 2 ou 3
-* `k` = 1 ou 2
+Let's go back to the [R example of the for loop](#ex_R_forloop) just above. 
+In this example, I want to execute the function `my_fct=n*p*k` on different input parameters:
 
-**Les 12 exécutions sont indépendantes** et donc on peut optimiser le lancement de ce job à l'aide d'un **array**. Le principe est qu'on demande au cluster un certain nombre de CPUs et le cluster va les choisir potentiellement dans des noeuds (node) differents.   
-On est donc sur une forme de paralélisation hybride OpenMPI ! 
+* `n` = 1 or 2
+* `p` = 1, 2 or 3
+* `k` = 1 or 2
 
-> Lorsqu'il y a beaucoup de jobs en attente sur le cluster, cela permet à votre job de passe plus vite car c'est plus facile de prendre *n* CPUs par-ci par-là plutôt que *n* CPUs sur le même noeud. La réservation de ressources est optimisée !
+**The 12 executions are independent** and therefore we can optimize the launch of this job using an **array**. The principle is that we ask the cluster a certain number of CPUs and the cluster will choose them potentially in different nodes.   
+So we are on a form of hybrid OpenMPI parallelization! 
 
-Pour ce faire, on spécifie l'option `--array` dans le batch (.sh) :
+> When there are a lot of jobs waiting on the cluster, it allows your job to go faster because it's easier to take *n* CPUs here and there rather than *n* CPUs on the same node. Resource reservation is optimized!
 
+To do this, we specify the `--array` option in the batch (.sh) :
 
 ```
 #!/bin/bash
-#SBATCH --partition=agap_short  # la partition
-#SBATCH --job-name array        # nom du job
-#SBATCH --array=1-12            # OPTION ARRAY 
+#SBATCH --partition=agap_short  # partition
+#SBATCH --job-name array        # job name
+#SBATCH --array=1-12            # ARRAY OPTION
 #SBATCH -o array-%a.out
-#SBATCH --mem-per-cpu=100M      # Mémoire par CPU
-#SBATCH --time=00:30:00         # Temps limite
+#SBATCH --mem-per-cpu=100M      # Memory per CPU
+#SBATCH --time=00:30:00         # Time limit
 
 module purge
 module load cv-standard
@@ -895,31 +910,31 @@ mkdir ./results
 Rscript ./main_script.R $SLURM_ARRAY_TASK_ID
 ```
 
-⚠️ **Attention** : On ne précise pas le nombre de noeud ni de coeur ni de tasks que l'on souhaite. C'est SLURM qui va répartir en fonction des ressources disponibles.
+⚠️ **Caution**: We do not specify the number of nodes, cores or tasks we want. It is SLURM that will distribute according to the available resources.
 
-Sur la dernière ligne d'exécution du script R, on rajoute la variable d'environnement `$SLURM_ARRAY_TASK_ID`, cela permet au script R de récupérer le numéro de la tâche.  
-Et enfin dans le script R il faut utiliser la commande `as.numeric(commandArgs(trailingOnly=TRUE)[1])` pour récupérer l'indice (*i*). Je peux ainsi lancer la fonction sur la ligne *i* ème ligne de ma grille de paramètres.
+On the last line of execution of the R script, we add the environment variable `$SLURM_ARRAY_TASK_ID`, this allows the R script to retrieve the task number.  
+And finally in the R script we must use the command `as.numeric(commandArgs(trailingOnly=TRUE)[1])` to get the index (*i*). So I can run the function on the *i*th line of my parameter grid.
 
 ```
-# on récupère l'indice de la tâche ($SLURM_ARRAY_TASK_ID)
+# Get the task id ($SLURM_ARRAY_TASK_ID)
 i = as.numeric(commandArgs(trailingOnly=TRUE)[1])
 
-# Définition d'une grille de paramètres que je veux faire varier
+# Parameter grid definition
 pars <-  expand.grid(n = 1:2, p = 1:3, k = 1:2)
 
-# Définition de ma fonction
+# Function definition
 my_fct <- function(n, p, k) return(n*p*k)
 
-# Execution de la fonction sur la ligne i de la grille de paramètres
+# Execution of the function on line i of the parameter grid
 result <- my_fct(n=pars$n[i], p=pars$p[i], k=pars$k[i])
 print(paste0("Le resultat de ma fonction est : ", result))
 ```
 
-> La scructuration du code R est totalement repensé, pas besoin de déclarer un nombre de CPUs comme dans l'exemple précédent. Ici le script est pensé pour une éxécution et il doit être indépendant des autres exécutions (on charge tout ce dont la tâche à besoin : la grille de paramètres, la fonction). Ce script ne peut pas s'éxécuter sur votre PC tel quel  contrairement au script R précédent !
+> The structure of the R code is totally rethought, no need to declare a number of CPUs as in the previous example. Here the script is designed for one execution and it must be independent of other executions (we load everything the task needs: the parameter grid, the function, ...). This script can't be executed on your PC as is, unlike the previous R script!
 
 
 <br>
-Pour supprimer des tâches dans un job array :
+To delete tasks in a job array :
 
 ```
 # Cancel array ID 1 to 3 from job array 20
@@ -931,52 +946,60 @@ $ scancel 20_4 20_5
 # Cancel all elements from job array 20
 $ scancel 20
 ```
-Plus d'info ici : https://slurm.schedmd.com/job_array.html
+More informations here: https://slurm.schedmd.com/job_array.html
 
 
 
 
 
 
+<a name="annexes_unix_LF"></a>
 
-## B. Script batch corrompu à cause des retours à la ligne WINDOWS {#annexes_unix_LF}
+## B. Batch script corrupted by WINDOWS line breaks 
 
-**Si tu as un fichier corrompu à cause des retours à la ligne au format WINDOWS**
+**If you have a corrupted file due to line breaks in WINDOWS format**
 ```
 -bash-4.2$ sbatch job_submission.sh
 sbatch: error: Batch script contains DOS line breaks (\r\n)
 sbatch: error: instead of expected UNIX line breaks (\n).
 ```
-Tu peux soit :
-
-* dans **Notepad++** faire :  *Edition > Convertir les sauts de ligne > Convertir en format UNIX (LF)* et sauvegarder
-* dans **Rstudio** (avec l'option qui va bien pour les fin de lignes "unix LF" comme décrit au dessus) : modifier légèrement ton .sh (avec un saut de ligne par exemple) et le sauvegarder. Rstudio va automatiquement convertir les sauts de ligne
 
 
+You can either :
 
-
+* in **Notepad++** do:  *Edit > Convert line breaks > Convert to UNIX (LF) format * and save
+* in **Rstudio** (with the right option for "unix LF" line breaks as described above): slightly modify your .sh (with a line break for example) and save it. Rstudio will automatically convert the line breaks
 
 
 
 
 
 
-## C. rsync EN CONSTRUCTION {#annexes_rsunc}
+
+
+
+[-----------------------------------------------------------]: # 
+
+
+
+<a name="annexes_rsync"></a>
+
+## C. rsync (IN PROGRESS)
 
 source : https://meso-lr.umontpellier.fr/documentation-utilisateurs/
 
 ```
 #! /usr/bin/env bash
 ###################################################################
-# rsync.sh : Ecrit par Jérémy Verrier				  #
-# Script permettant la copie sécurisée de fichiers ou de dossiers #
+# rsync.sh : Written by Jérémy Verrier				  #
+# Script allowing the secure copy of files or folders #
 ###################################################################
 
 # Entrez votre nom d'utilisateur
 USER=
-# Entrez le chemin complet du répertoire ou du fichier à copier (/home/verrier/work/results.txt)
+# Enter the absolute path of the directory or file to copy from the cluster (/home/verrier/work/results.txt)
 DOSSIER_CLUSTER=
-# Entrez le chemin complet du répertoire ou du fichier de destination
+# Enter the absolute path of the destination directory or file on your PC
 DOSSIER_PERSO=
 
 while [ 1 ]
@@ -993,11 +1016,43 @@ done
 ```
 
 
-A enregister au au format .sh ou à télécharger avec le lien ci-dessous.
+To save in .sh format or to download with the link below.
 
-[Ce script](https://hpc-lr.umontpellier.fr/wp-content/uploads/2017/05/rsync.txt) vous permet de copier des données depuis le cluster Muse vers votre machine.
-Il vous faut modifier les champs USER, DOSSIER_CLUSTER et DOSSIER_PERSO et ensuite le lancer avec la commande « bash rsync ».
-Il est vivement conseillé d’utiliser ce script lors de téléchargement de fichiers volumineux.
+[This script](https://hpc-lr.umontpellier.fr/wp-content/uploads/2017/05/rsync.txt) allows you to copy data from the cluster to your machine.
+You have to modify the USER, DOSSIER_CLUSTER and DOSSIER_PERSO fields and then launch it with the "bash rsync" command.
+It is highly recommended to use this script when downloading large files.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

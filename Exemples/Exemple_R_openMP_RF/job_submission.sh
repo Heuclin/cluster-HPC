@@ -17,8 +17,7 @@
 
 
 module purge
-module load cv-standard
-module load R/3.6.1
+module load R/4.1.0 R/packages/4.1.0
 
 # OpenMP runtime settings
 export OMP_NUM_THREADS=$SLURM_CPUS_ON_NODE

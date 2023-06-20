@@ -14,8 +14,7 @@
 #SBATCH --time=00:30:00         # Temps limite
 
 module purge
-module load cv-standard
-module load R/3.6.1
+module load R/4.1.0 R/packages/4.1.0
 
 
 cd $SLURM_SUBMIT_DIR
